@@ -11,11 +11,6 @@ permissions:
   contents: read
 
 jobs:
-
-  # ==========================================
-  # JOB 1: RUN AUTOMATED TESTS
-  # ==========================================
-
   test:
     name: Run Python Tests
     runs-on: ubuntu-latest
@@ -59,9 +54,12 @@ jobs:
         run: |
           psql -h localhost -U postgres -d fastapi_db \
             -v ON_ERROR_STOP=1 -f sql/01_schema.sql
-
           psql -h localhost -U postgres -d fastapi_db \
             -v ON_ERROR_STOP=1 -f sql/04_add_password_hash.sql
+
+      - name: Create SQLAlchemy tables
+        run: |
+          python -c "from app.database.connection import Base, engine; from app.database.models import User, Calculation; Base.metadata.create_all(bind=engine)"
 
       - name: Install Playwright browser
         run: |
@@ -91,10 +89,6 @@ jobs:
         with:
           name: pytest-results
           path: test-results/
-
-  # ==========================================
-  # JOB 2: BUILD, SCAN, AND DEPLOY DOCKER IMAGE
-  # ==========================================
 
   docker-build-scan-deploy:
     name: Build, Scan, and Deploy Docker Image
@@ -135,7 +129,6 @@ jobs:
         run: |
           docker tag fastapi-user-api:latest \
             ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:latest
-
           docker tag fastapi-user-api:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:${{ github.sha }}
 
@@ -143,5 +136,4 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:latest
-
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:${{ github.sha }}
