@@ -102,15 +102,15 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t fastapi-user-api:${{ github.sha }} \
-            -t fastapi-user-api:latest \
+            -t fastapi-calculation-api:${{ github.sha }} \
+            -t fastapi-calculation-api:latest \
             .
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
-          image-ref: fastapi-user-api:${{ github.sha }}
+          image-ref: fastapi-calculation-api:${{ github.sha }}
           format: table
           exit-code: '0'
           ignore-unfixed: true
@@ -127,13 +127,13 @@ jobs:
       - name: Tag Docker image for Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          docker tag fastapi-user-api:latest \
-            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:latest
-          docker tag fastapi-user-api:${{ github.sha }} \
-            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:${{ github.sha }}
+          docker tag fastapi-calculation-api:latest \
+            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-calculation-api:latest
+          docker tag fastapi-calculation-api:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-calculation-api:${{ github.sha }}
 
       - name: Push Docker image to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-user-api:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-calculation-api:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-calculation-api:${{ github.sha }}
